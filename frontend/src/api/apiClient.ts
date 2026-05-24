@@ -1,10 +1,10 @@
 // frontend/src/api/apiClient.ts
 import axios from 'axios';
 
-// Create an axios instance with a base URL
-// All requests made with this instance will automatically have this URL prefixed
+// Use Vite's dev proxy (/api → http://127.0.0.1:8000) to avoid CORS issues.
+// In production, replace with the real backend URL.
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: '/api',
 });
 
 export default apiClient;

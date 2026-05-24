@@ -10,6 +10,7 @@ import StepProgress from "@/components/StepProgress";
 import ModelInfoModal from "@/components/ModelInfoModal";
 import CameraCapture from "@/components/CameraCapture";
 import ConfidenceAlert from "@/components/ConfidenceAlert";
+import HeatmapVisualization from "@/components/HeatmapVisualization";
 import { generatePDFReport } from "@/utils/reportGenerator";
 import { useTranslation } from "react-i18next";
 import { analyzeImageApi, type PredictionResult } from '@/api/scanApi';
@@ -97,10 +98,15 @@ const Upload = () => {
       title: "Analysis Complete",
       description: "Your X-ray has been analyzed successfully",
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("❌ analyzeImage error:", error);
+    const detail =
+      error?.response?.data?.detail ||
+      error?.message ||
+      "Unable to connect to the API. Please ensure the FastAPI server is running.";
     toast({
       title: "Analysis Failed",
-      description: "Unable to connect to the API. Please ensure the FastAPI server is running.",
+      description: detail,
       variant: "destructive"
     });
     setCurrentStep(1);
@@ -233,25 +239,6 @@ const Upload = () => {
                         <X className="h-4 w-4" />
                       </button>
                     </div>
-                    <AnimatePresence>
-                      {result && result.heatmap && (
-                        <motion.div
-                          className="mt-4"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                        >
-                          <p className="text-sm font-medium text-center text-muted-foreground mb-2">
-                            AI Focus (Heatmap)
-                          </p>
-                          <img
-                            src={`data:image/jpeg;base64,${result.heatmap}`}
-                            alt="Prediction heatmap"
-                            className="w-full rounded-xl shadow-soft"
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
 
                   <div className="flex flex-col justify-center">
@@ -339,6 +326,17 @@ const Upload = () => {
             )}
           </AnimatePresence>
         </Card>
+
+        {/* ── Heatmap Visualization Panel ── */}
+        <AnimatePresence>
+          {result && preview && (
+            <HeatmapVisualization
+              originalImage={preview}
+              heatmapImage={result.heatmap ?? null}
+              prediction={result.prediction}
+            />
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
